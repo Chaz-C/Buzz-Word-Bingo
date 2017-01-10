@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 let app = express();
 
-let buzzJson = {
+let allWords = {
   "buzzWords": []
 };
 
@@ -17,7 +17,7 @@ app.get('/', (req, res, next) => {
 });
 
 app.get('/buzzwords', (req, res, next) => {
-  res.send(buzzJson);
+  res.send(allWords);
 });
 
 
@@ -26,29 +26,41 @@ app.get('/buzzwords', (req, res, next) => {
 // });
 
 app.post('/buzzword', function (req, res, next) {
-  buzzJson.buzzWords.push(req.body);
+  allWords.buzzWords.push(req.body);
   res.send('{"success": true}');
 });
 
 app.put('/buzzword', function (req, res, next) {
   let allWords = [];
-  for ( let i = 0; i < buzzJson.buzzWords.length; i ++ ) {
-    allWords.push(buzzJson.buzzWords[i].buzzWord);
+  for ( let i = 0; i < allWords.buzzWords.length; i ++ ) {
+    allWords.push(allWords.buzzWords[i].buzzWord);
   }
   let buzzWordIndex = allWords.indexOf(req.body.buzzWord);
   console.log(allWords);
   console.log(buzzWordIndex);
-  if ( buzzWordIndex >= 0 && buzzJson.buzzWords[buzzWordIndex].heard === "false" ) {
-    buzzJson.buzzWords[buzzWordIndex].heard = "true";
+  if ( buzzWordIndex >= 0 && allWords.buzzWords[buzzWordIndex].heard === "false" ) {
+    allWords.buzzWords[buzzWordIndex].heard = "true";
     res.send(`{ "success": true,
-      newScore: ${playerScore += parseInt(buzzJson.buzzWords[buzzWordIndex].score)} }`);
+      newScore: ${playerScore += parseInt(allWords.buzzWords[buzzWordIndex].score)} }`);
   } else {
     res.send('{ "success": false }');
   }
 });
 
 app.delete('/buzzword', function (req, res, next) {
+  let wordFound = false;
+  function deleteWord(element, index, array) {
+    if ( element.buzzWord === req.body.buzzWord ) {
+      allWords.buzzWords.splice(index, 1);
+      wordFound = true;
+      return res.send('{ "success": true }');
+    }
+  }
 
+  allWords.buzzWords.filter(deleteWord);
+  if ( wordFound === false ) {
+    res.send('{ "success": false }');
+  }
 });
 
 let server = app.listen(3000, function () {
