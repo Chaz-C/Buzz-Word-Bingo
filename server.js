@@ -1,7 +1,6 @@
 // jshint esversion: 6
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
 let app = express();
 
 let allWords = {
@@ -20,24 +19,22 @@ app.get('/buzzwords', (req, res, next) => {
   res.send(allWords);
 });
 
-
-// app.post('/buzzword', (req, res, next) => {
-//     app.use(bodyParser)
-// });
-
 app.post('/buzzword', function (req, res, next) {
-  allWords.buzzWords.push(req.body);
-  res.send('{"success": true}');
+  console.log(req.body);
+  if ( "score" in req.body && "buzzWord" in req.body && req.body.heard === "false" ) {
+    allWords.buzzWords.push(req.body);
+    res.send('{"success": true}');
+  } else {
+    res.send('{ "success": false}' );
+  }
 });
 
 app.put('/buzzword', function (req, res, next) {
-  let allWords = [];
+  let buzzWordsArr = [];
   for ( let i = 0; i < allWords.buzzWords.length; i ++ ) {
-    allWords.push(allWords.buzzWords[i].buzzWord);
+    buzzWordsArr.push(allWords.buzzWords[i].buzzWord);
   }
-  let buzzWordIndex = allWords.indexOf(req.body.buzzWord);
-  console.log(allWords);
-  console.log(buzzWordIndex);
+  let buzzWordIndex = buzzWordsArr.indexOf(req.body.buzzWord);
   if ( buzzWordIndex >= 0 && allWords.buzzWords[buzzWordIndex].heard === "false" ) {
     allWords.buzzWords[buzzWordIndex].heard = "true";
     res.send(`{ "success": true,
@@ -59,6 +56,16 @@ app.delete('/buzzword', function (req, res, next) {
 
   allWords.buzzWords.filter(deleteWord);
   if ( wordFound === false ) {
+    res.send('{ "success": false }');
+  }
+});
+
+app.post('/reset', function (req, res, next) {
+  if ( req.body.reset === "true" ) {
+    allWords.buzzWords = [];
+    playerScore = 0;
+    res.send('{ "success": true }');
+  } else {
     res.send('{ "success": false }');
   }
 });
